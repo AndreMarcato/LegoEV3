@@ -1,6 +1,12 @@
 import random
 import matplotlib.pyplot as plt
+import bluetooth
 
+MAC = ''
+
+sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+sock.connect((MAC,1))
+sock.send(b'Solicitar arquivo')
 path = 'teste.log'
 num_linhas = 100
 with open(path, 'w') as arquivo:
