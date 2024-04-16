@@ -15,9 +15,6 @@ def log(mensagem):
 def sinal(a):
     if a>=0: return 1
     if a<0: return -1
-        
-def dt():
-    return time.time()-t
 
 sound = Sound()
 sound.speak("E V 3 dev project")
@@ -30,22 +27,17 @@ motor_dir = LargeMotor(OUTPUT_C)
 
 cor = ColorSensor(INPUT_2)
 
-t=time.time()
-ti=t
-while abs(angulo_alvo-cor.angle)>tol:
+objetivo = 50
+v=50
 
-    erro_angulo = 100*(angulo_alvo-cor.angle)/360
-    
-    P = kp*erro_angulo
-    I = I + ki*erro_angulo*dt()
-    u = P+I
-    
-    log("t: "+str(t-ti)+" P: "+str(P)+" I: "+str(I)+" u: "+str(u))
-    if abs(u)>100: u=sinal(u)*100
-    
-    girar(u)
-    t = time.time()
+while True:
 
+    if cor.reflected_light_intensity > objetivo:
+        motor_dir.on(v)
+        motor_esq.on(0.8*v)
+    else:
+        motor_dir.on(0.8*v)
+        motor_esq.on(v)
   
 
             
