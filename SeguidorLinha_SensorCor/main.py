@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 from ev3dev2.motor import LargeMotor,OUTPUT_B,OUTPUT_C,SpeedPercent,MoveTank
-from ev3dev2.sensor import INPUT_1, INPUT_4, INPUT_2
+from ev3dev2.sensor import INPUT_1, INPUT_4, INPUT_3
 from ev3dev2.sensor.lego import ColorSensor
 from ev3dev2.sound import Sound
 import time
 
-log_on = True
+log_on = False
 
 def log(mensagem):
     if log_on:
@@ -25,20 +25,23 @@ log("Inicio arquivo log")
 motor_esq = LargeMotor(OUTPUT_B)
 motor_dir = LargeMotor(OUTPUT_C)
 
-cor = ColorSensor(INPUT_2)
+cor = ColorSensor(INPUT_3)
 
-objetivo = 50
+max = 70
+min = 10
+objetivo = (max+min)/2
 v=50
 
 while True:
 
-    if cor.reflected_light_intensity > objetivo:
+    ref = cor.reflected_light_intensity
+    if ref > objetivo:
         motor_dir.on(v)
         motor_esq.on(0.8*v)
     else:
         motor_dir.on(0.8*v)
         motor_esq.on(v)
-  
+    print(str(ref) + " ")
 
             
 motor_esq.stop()

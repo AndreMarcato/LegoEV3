@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 from ev3dev2.motor import LargeMotor,OUTPUT_B,OUTPUT_C,SpeedPercent,MoveTank
-from ev3dev2.sensor import INPUT_1, INPUT_4, INPUT_2
+from ev3dev2.sensor import INPUT_1, INPUT_4, INPUT_3
 from ev3dev2.sensor.lego import ColorSensor
 from ev3dev2.sound import Sound
 import time
 
-log_on = True
+log_on = False
 
-def log(mensagem):
-    if log_on:
+if log_on:
+    log_data = {"tempo": [], "P": [], "I": [], "D": []}
+
+    def log(mensagem):
         arquivo_log.write(mensagem)
         arquivo_log.write("\n")
 
@@ -25,18 +27,28 @@ log("Inicio arquivo log")
 motor_esq = LargeMotor(OUTPUT_B)
 motor_dir = LargeMotor(OUTPUT_C)
 
-cor = ColorSensor(INPUT_2)
+cor = ColorSensor(INPUT_3)
 
-objetivo = 50
+max = 70
+min = 10
+objetivo = (max+min)/2
+
 v=50
-kp,ki,kd, dt = 0
+kp,ki,kd = 0
+dt = 0
 I= 0
-while True:
 
+ti=time.time()
+t=ti
+while True:
+    
+    dt = time.time()-t
     erro = objetivo - (100 - cor.reflected_light_intensity)
     P = kp*erro
     I = I +ki*erro*dt
     D = kd*erro/dt
+    
+    w = P+I+D
     w = sinal(erro)*max(100,w)
 
     vr = (w+2*v)/2
@@ -44,6 +56,14 @@ while True:
     
     motor_dir.on(vr)
     motor_esq.on(ve)
+    
+    if log_on:
+        log_data["tempo"].append()
+        log_data["P"].append(P)
+        log_data["I"].append(I)
+        log_data["D"].append(D)
+        
+    t=time.time()
   
 
             
