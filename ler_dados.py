@@ -1,56 +1,60 @@
 import random
 import matplotlib.pyplot as plt
-import bluetooth
+import paramiko, pandas as pd
 
-MAC = ''
+hostname = 'ev3dev.local'
+port = 22
+username = 'robot'
+password = 'maker'  # Se necessário
 
-sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-sock.connect((MAC,1))
-sock.send(b'Solicitar arquivo')
-path = 'teste.log'
-num_linhas = 100
-with open(path, 'w') as arquivo:
-    # Define o valor inicial do tempo
-    tempo_anterior = 0
-    # Escreve os dados de cada linha
-    for _ in range(num_linhas):
-        # Gera um valor de tempo aleatório maior que o anterior
-        tempo = tempo_anterior + random.uniform(0, 1)
-        # Gera outros números aleatórios para cada coluna
-        erro = random.uniform(0, 10)
-        P = random.uniform(0, 5)
-        I = random.uniform(0, 3)
-        U = P + I
-        # Escreve os dados no arquivo de log
-        arquivo.write(f'{tempo} {erro} {P} {I} {U}\n')
-        # Atualiza o valor anterior do tempo
-        tempo_anterior = tempo
-        
-t = []
-erro = []
-P = []
-I = []
-U = []
+diretorio_ev3 = '/home/robot/'
 
-with open(path,'r') as arquivo:
-    
-    for linha in arquivo:
-        
-        dados = linha.split()
-        
-        t.append(float(dados[0]))
-        erro.append(float(dados[1]))
-        P.append(float(dados[2]))
-        I.append(float(dados[3]))
-        U.append(float(dados[4]))
-        
-        
-plt.plot(t, erro, label='Erro')
-plt.plot(t, P, label='P')
-plt.plot(t, I, label='I')
-plt.plot(t, U, label='U')
+cliente_ssh = paramiko.SSHClient()
+cliente_ssh.load_system_host_keys()
+cliente_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+cliente_ssh.connect(hostname, port, username, password)
+
+stdin, stdout, stderr = cliente_ssh.exec_command(f'ls {diretorio_ev3}')
+
+# Leia a saída do comando e obtenha a lista de arquivos
+arquivos = stdout.read().decode('utf-8').splitlines()
+
+# Crie um menu com as opções de cada arquivo
+print("Escolha um arquivo:")
+for i, arquivo in enumerate(arquivos):
+    print(f"{i+1}. {arquivo}")
+
+# Leia a opção do usuário
+opcao = int(input("Digite o número do arquivo que deseja ler: "))
+path = diretorio_ev3+arquivos[opcao - 1]
+print(path)
+
+stdin, stdout, stderr = cliente_ssh.exec_command(f'cat {path}')
+
+
+with cliente_ssh.open_sftp() as sftp:
+        with sftp.open(path) as file:
+            # Lendo o conteúdo do arquivo e ignorando a primeira linha
+            df = pd.read_csv(file)
+print(df)
+# Definindo a coluna "tempo" como o índice do DataFrame
+df.set_index('Tempo', inplace=True)
+
+# Plotando os dados do DataFrame
+df.plot()
 plt.xlabel('Tempo')
 plt.ylabel('Valores')
 plt.title('Gráfico dos Dados do Arquivo de Log')
-plt.legend()
-plt.show()
+plt.legend(title='Amostra')
+plt.show()             
+
+# plt.plot(df['tempo'], erro, label='Erro')
+# plt.plot(t, P, label='P')
+# plt.plot(t, I, label='I')
+# plt.plot(t, U, label='U')
+# plt.xlabel('Tempo')
+# plt.ylabel('Valores')
+# plt.title('Gráfico dos Dados do Arquivo de Log')
+# plt.legend()
+# plt.show()

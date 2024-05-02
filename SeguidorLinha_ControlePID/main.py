@@ -3,47 +3,54 @@ from ev3dev2.motor import LargeMotor,OUTPUT_B,OUTPUT_C,SpeedPercent,MoveTank
 from ev3dev2.sensor import INPUT_1, INPUT_4, INPUT_3
 from ev3dev2.sensor.lego import ColorSensor
 from ev3dev2.sound import Sound
-import time
+from ev3dev2.button import Button
+import time, csv
 
-log_on = False
+log_on = True
 
 if log_on:
+    arquivo_csv = open('//home//robot//PI_cor.csv','w',newline='')
+    escritor_csv = csv.writer(arquivo_csv)
+    escritor_csv.writerow(['Tempo', 'P', 'I', 'D'])
     log_data = {"tempo": [], "P": [], "I": [], "D": []}
 
     def log(mensagem):
-        arquivo_log.write(mensagem)
-        arquivo_log.write("\n")
+        escritor_csv.writerow(mensagem[:])
+
 
 def sinal(a):
     if a>=0: return 1
     if a<0: return -1
 
 sound = Sound()
-sound.speak("E V 3 dev project")
+sound.beep()
 
-arquivo_log = open('//home//robot//PI_cor.log','a')
-log("Inicio arquivo log")
 
 motor_esq = LargeMotor(OUTPUT_B)
 motor_dir = LargeMotor(OUTPUT_C)
 
 cor = ColorSensor(INPUT_3)
+botao = Button()
 
-max = 70
+MAX = 70
 min = 10
-objetivo = (max+min)/2
+objetivo = (MAX+min)/2
 
 v=50
-kp,ki,kd = 0
+kp=1
+ki=2
+kd = 0
 dt = 0
 I= 0
 
 ti=time.time()
 t=ti
-while True:
+while not(botao.any()):
+    
+    erro = objetivo - (100 - cor.reflected_light_intensity)
     
     dt = time.time()-t
-    erro = objetivo - (100 - cor.reflected_light_intensity)
+
     P = kp*erro
     I = I +ki*erro*dt
     D = kd*erro/dt
@@ -54,23 +61,28 @@ while True:
     vr = (w+2*v)/2
     ve = 2*v -vr
     
-    motor_dir.on(vr)
-    motor_esq.on(ve)
-    
     if log_on:
-        log_data["tempo"].append()
+        log_data["tempo"].append(t-ti)
         log_data["P"].append(P)
         log_data["I"].append(I)
         log_data["D"].append(D)
-        
-    t=time.time()
-  
 
+    t=time.time()
             
+    motor_dir.on(vr)
+    motor_esq.on(ve)
+            
+
+    
+  
+for i in range(len(log_data["tempo"])):
+ 
+    log([log_data['tempo'][i],log_data['P'][i],log_data['I'][i],log_data['D'][i]])
+
 motor_esq.stop()
 motor_dir.stop()
 sound.beep()
 
 
-arquivo_log.close()
+arquivo_csv.close()
 input("Pressione Enter para encerrar...")
