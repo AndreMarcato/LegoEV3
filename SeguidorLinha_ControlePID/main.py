@@ -25,7 +25,6 @@ def sinal(a):
 sound = Sound()
 sound.beep()
 
-
 motor_esq = LargeMotor(OUTPUT_B)
 motor_dir = LargeMotor(OUTPUT_C)
 
@@ -37,14 +36,17 @@ min = 10
 objetivo = (MAX+min)/2
 
 v=50
-kp=1
+
+kp=10
 ki=2
 kd = 0
+
 dt = 0
 I= 0
 
-ti=time.time()
-t=ti
+t=time.time()
+ti=t
+
 while not(botao.any()):
     
     erro = objetivo - (100 - cor.reflected_light_intensity)
@@ -66,6 +68,7 @@ while not(botao.any()):
         log_data["P"].append(P)
         log_data["I"].append(I)
         log_data["D"].append(D)
+        log_data["w"].append(w)
 
     t=time.time()
             

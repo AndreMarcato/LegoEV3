@@ -6,7 +6,7 @@ from ev3dev2.led import Leds
 from ev3dev2.sound import Sound
 import time, csv
 
-log_on = True
+log_on = False
 
 if log_on:
     
@@ -27,14 +27,9 @@ def sinal(a):
     if a>=0: return 1
     if a<0: return -1
         
-def dt():
-    return time.time()-t
 
 sound = Sound()
-sound.speak("E V 3 dev project")
-
-
-log("Inicio arquivo log")
+sound.beep()
 
 motor_esq = LargeMotor(OUTPUT_B)
 motor_dir = LargeMotor(OUTPUT_C)
@@ -50,6 +45,7 @@ kp = 10
 ki = 1
 kd = 0
 
+dt = 0
 I=0
 
 t=time.time()
@@ -57,25 +53,35 @@ ti=t
 
 while abs(angulo_alvo-giro.angle)>tol:
 
-    erro_angulo = 100*(angulo_alvo-giro.angle)/360
+    erro = 100*(angulo_alvo-giro.angle)/360
     
-    P = kp*erro_angulo
-    I = I + ki*erro_angulo*dt()
-    D = kd*erro_angulo/dt()
+    dt = time.time() - t
+    
+    P = kp*erro
+    I = I + ki*erro*dt
+    D = kd*erro/dt
     u = P+I+D
     
-    if abs(u)>100: u=sinal(u)*100
+    u = sinal(erro)*max(u,100)
+    
+    if log_on:
+        log_data["tempo"].append(t-ti)
+        log_data["P"].append(P)
+        log_data["I"].append(I)
+        log_data["D"].append(D)
+
+    t = time.time()
     
     girar(u)
-    t = time.time()
-
-  
-
-            
+    
+for i in range(len(log_data["tempo"])):
+ 
+    log([log_data['tempo'][i],log_data['P'][i],log_data['I'][i],log_data['D'][i]])
+              
 motor_esq.stop()
 motor_dir.stop()
 sound.beep()
 
 
-arquivo_log.close()
+arquivo_csv.close()
 input("Pressione Enter para encerrar...")
