@@ -4,9 +4,21 @@ from ev3dev2.sensor import INPUT_1, INPUT_4, INPUT_2
 from ev3dev2.sensor.lego import TouchSensor, UltrasonicSensor,GyroSensor
 from ev3dev2.led import Leds
 from ev3dev2.sound import Sound
+from ev3dev2.button import Button
 import time, csv
 
-log_on = False
+btn = Button()
+
+print("Seta direita: log_on true")
+print("Seta esquerda: log_on false")
+
+btn.wait_for_bump()
+if btn.right:
+    log_on = True
+elif btn.left:
+    log_on = False  
+
+
 
 if log_on:
     
