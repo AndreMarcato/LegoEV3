@@ -8,19 +8,20 @@ import time, csv
 
 log_on = True
 
+def sinal(a):
+    return 1 if a>=0 else -1
+
 if log_on:
-    arquivo_csv = open('//home//robot//PI_cor.csv','w',newline='')
+    arquivo_csv = open('//home//robot//PID_SeguidorLinha.csv','w',newline='')
     escritor_csv = csv.writer(arquivo_csv)
     escritor_csv.writerow(['Tempo', 'P', 'I', 'D'])
-    log_data = {"tempo": [], "P": [], "I": [], "D": []}
+    log_data = {"tempo": [], "P": [], "I": [], "D": [],"W":[]}
 
     def log(mensagem):
         escritor_csv.writerow(mensagem[:])
 
 
-def sinal(a):
-    if a>=0: return 1
-    if a<0: return -1
+
 
 sound = Sound()
 sound.beep()
@@ -41,21 +42,21 @@ kp=10
 ki=2
 kd = 0
 
-dt = 0
+dt = 1E-6
 I= 0
 
-t=time.time()
-ti=t
+t = ti = time.perf_counter()
+
+erro_i = erro = objetivo - (100 - cor.reflected_light_intensity)
+
+while not(botao.any()):
+    continue
 
 while not(botao.any()):
     
-    erro = objetivo - (100 - cor.reflected_light_intensity)
-    
-    dt = time.time()-t
-
     P = kp*erro
-    I = I +ki*erro*dt
-    D = kd*erro/dt
+    I += ki*erro*dt
+    D = kd*(erro-erro_i)/dt
     
     w = P+I+D
     w = sinal(erro)*max(100,w)
