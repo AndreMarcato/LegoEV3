@@ -69,7 +69,7 @@ D = 0
 dt = lambda : time.perf_counter()-t
 
 w = P+I+D
-v = 5
+v = 7
 vd = limita(v + w)
 ve = limita(2*v-vd)
 
