@@ -37,9 +37,6 @@ if log_on:
         log_data["Ang"].append(giro.angle)
         
 
-sound = Sound()
-sound.beep()
-
 motor_esq = LargeMotor(OUTPUT_B)
 motor_dir = LargeMotor(OUTPUT_C)
 
@@ -102,6 +99,3 @@ if log_on:
         log([log_data['tempo'][i]-ti,log_data['P'][i],log_data['I'][i],log_data['D'][i],log_data['U'][i],log_data['Ang'][i]])
     arquivo_csv.close()
           
-sound.beep()
-
-input("Pressione Enter para encerrar...")
